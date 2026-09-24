@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Convertidor MP3 → OGG</title>
+<title>MP3 → OGG · Convertidor universal</title>
 <style>
   :root{
     --bg:#0f1115; --card:#171a21; --line:#252a34; --txt:#e7eaf0; --muted:#9aa3b2;
-    --accent:#6c8cff; --ok:#3ddc97; --danger:#ff6b6b;
+    --accent:#6c8cff; --ok:#3ddc97; --danger:#ff6b6b; --warn:#ffcf7a;
   }
   *{box-sizing:border-box}
   body{
@@ -15,11 +15,14 @@
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     background:radial-gradient(1200px 600px at 50% -10%,#1b2130,var(--bg));
   }
-  .wrap{max-width:820px;margin:0 auto}
+  .wrap{max-width:860px;margin:0 auto}
   h1{font-size:clamp(24px,4vw,34px);margin:0 0 6px}
   h1 span{background:linear-gradient(90deg,var(--accent),var(--ok));-webkit-background-clip:text;background-clip:text;color:transparent}
   .sub{color:var(--muted);margin:0 0 26px;line-height:1.5}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:22px}
+  .card h2{font-size:16px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+  .pill{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:#1e232d;color:var(--muted);border:1px solid var(--line)}
+  .pill.ok{background:#123024;color:var(--ok);border-color:#1f5b45}
 
   .drop{
     border:2px dashed #333a48;border-radius:14px;padding:38px 20px;text-align:center;
@@ -32,12 +35,15 @@
 
   .opts{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:18px}
   .opts label{color:var(--muted);font-size:14px}
-  select{
+  select,input[type=text],input[type=url]{
     background:#12151c;color:var(--txt);border:1px solid var(--line);
-    border-radius:9px;padding:8px 10px;font-size:14px;
+    border-radius:9px;padding:9px 11px;font-size:14px;width:100%;
   }
+  select{width:auto}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .row > *{flex:1 1 260px}
   .warn{margin-top:14px;padding:10px 12px;border-radius:10px;font-size:13px;
-        background:#3a2a12;border:1px solid #6b4a12;color:#ffcf7a;display:none}
+        background:#3a2a12;border:1px solid #6b4a12;color:var(--warn);display:none}
 
   ul.list{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:12px}
   .item{background:#12151c;border:1px solid var(--line);border-radius:12px;padding:14px}
@@ -55,36 +61,40 @@
   .btn{
     display:inline-block;text-decoration:none;cursor:pointer;border:none;
     background:var(--accent);color:#fff;font-size:13.5px;font-weight:600;
-    padding:8px 14px;border-radius:9px;transition:.15s;
+    padding:9px 15px;border-radius:9px;transition:.15s;
   }
   .btn:hover{filter:brightness(1.12)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
   .btn.ghost{background:#1e232d;color:var(--txt)}
 
-  .note{margin-top:26px;font-size:13.5px;line-height:1.65;color:var(--muted)}
-  .note h2{font-size:15px;color:var(--txt);margin:0 0 8px}
+  .note{margin-top:6px;font-size:13.5px;line-height:1.65;color:var(--muted)}
+  .note h3{font-size:14px;color:var(--txt);margin:16px 0 6px}
   .note code{background:#12151c;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px}
   .note a{color:var(--accent)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Convertidor <span>MP3 → OGG</span></h1>
-  <p class="sub">100% en tu navegador. Tus archivos no se suben a ningún servidor.</p>
+  <h1>Convertidor <span>MP3 → OGG</span> universal</h1>
+  <p class="sub">OGG Vorbis real en cualquier navegador, sin subir nada a un servidor.</p>
 
+  <!-- ============ MP3 → OGG ============ -->
   <div class="card">
+    <h2>1 · Convertir audio local <span class="pill" id="enginePill">cargando…</span></h2>
+
     <div class="drop" id="drop">
       <b>Arrastra tus MP3 aquí</b>
       <small>o haz clic para seleccionarlos · puedes elegir varios</small>
     </div>
-    <input type="file" id="file" accept="audio/*,.mp3,.ogg,.wav,.m4a,.flac" multiple>
+    <input type="file" id="file" accept="audio/*,.mp3,.ogg,.wav,.m4a,.flac,.aac" multiple>
 
     <div class="opts">
-      <label for="bitrate">Calidad:</label>
-      <select id="bitrate">
-        <option value="96000">96 kbps · ligero</option>
-        <option value="128000" selected>128 kbps · recomendado</option>
-        <option value="192000">192 kbps · alta</option>
-        <option value="256000">256 kbps · muy alta</option>
+      <label for="quality">Calidad Vorbis:</label>
+      <select id="quality">
+        <option value="0.20">Baja · ~96 kbps</option>
+        <option value="0.40" selected>Media · ~128 kbps</option>
+        <option value="0.60">Alta · ~192 kbps</option>
+        <option value="0.85">Muy alta · ~256 kbps</option>
       </select>
     </div>
 
@@ -92,235 +102,349 @@
     <ul class="list" id="list"></ul>
   </div>
 
+  <!-- ============ YouTube ============ -->
+  <div class="card">
+    <h2>2 · YouTube → OGG <span class="pill">requiere backend</span></h2>
+
+    <div class="row">
+      <input type="url" id="ytUrl" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+    </div>
+    <div class="row">
+      <input type="url" id="ytApi" placeholder="https://tu-servidor.com/api/youtube"
+             value="" autocomplete="off">
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="ytGo" style="flex:0 0 auto">Convertir a OGG</button>
+    </div>
+
+    <div class="warn" id="ytWarn" style="display:block">
+      JavaScript del navegador no puede descargar de YouTube: CORS bloquea
+      <code>youtube.com</code> y la extracción necesita resolver firmas en un servidor.
+      Esta tarjeta hace la petición a <b>tu</b> backend (el campo de arriba) y espera
+      una respuesta <code>{ url: "https://.../audio.ogg" }</code>.
+    </div>
+    <ul class="list" id="ytList"></ul>
+  </div>
+
+  <!-- ============ Notas ============ -->
   <div class="note">
-    <h2>Sobre YouTube</h2>
+    <h3>¿Por qué ahora sí funciona en Chrome?</h3>
     <p>
-      Esta página <b>no</b> descarga videos de YouTube. No es solo una decisión legal
-      (va contra los Términos de Servicio de YouTube): técnicamente un HTML estático
-      <b>no puede</b> hacerlo, porque el navegador bloquea las peticiones a youtube.com
-      por CORS y la extracción requiere un servidor que resuelva firmas y cifrados.
-      Cualquier web que lo ofrezca está usando un backend, no solo HTML.
+      Chrome y Safari no dejan que <code>MediaRecorder</code> genere OGG Vorbis.
+      Esta página compila el codificador Vorbis a WebAssembly
+      (<a href="https://github.com/zhuker/wasm-media-encoders" target="_blank" rel="noopener">wasm-media-encoders</a>)
+      y lo ejecuta en tu navegador. Si el WASM no carga por red, cae automáticamente
+      a <code>MediaRecorder</code> (OGG en Firefox, WebM/Opus en Chrome).
+    </p>
+
+    <h3>Contrato del backend para YouTube</h3>
+    <p>
+      <b>Petición:</b> <code>POST {tu-endpoint}</code> con
+      <code>Content-Type: application/json</code> y cuerpo
+      <code>{"url": "https://youtube.com/watch?v=..."}</code>.
     </p>
     <p>
-      Alternativas legales: la función <b>Descargar</b> de YouTube (móvil/escritorio, según región),
-      <b>YouTube Premium</b> para ver sin conexión, o descargar audio de fuentes con licencia
-      libre como <a href="https://freemusicarchive.org" target="_blank" rel="noopener">Free Music Archive</a>,
-      <a href="https://incompetech.com" target="_blank" rel="noopener">Incompetech</a> o
-      <a href="https://archive.org" target="_blank" rel="noopener">Internet Archive</a>.
+      <b>Respuesta esperada:</b> <code>200 OK</code> con
+      <code>{"url": "https://.../archivo.ogg"}</code> apuntando a un OGG descargable
+      (o un <code>audio/ogg</code> directo si añades <code>?raw=1</code>).
     </p>
-    <h2>Nota técnica</h2>
     <p>
-      La conversión usa <code>decodeAudioData</code> + <code>MediaRecorder</code>, así que
-      se hace en <b>tiempo real</b>: un tema de 3 minutos tarda ~3 minutos. Para lotes grandes,
-      usa ffmpeg desde la terminal:<br>
-      <code>ffmpeg -i entrada.mp3 -c:a libvorbis -q:a 5 salida.ogg</code>
+      Backends típicos que ya hacen esta parte: <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a>
+      detrás de un endpoint Express/FastAPI, o <a href="https://github.com/imputnet/cobalt" target="_blank" rel="noopener">cobalt</a>
+      self-hosteado. Esta página es solo la interfaz.
     </p>
   </div>
 </div>
 
-<script>
-(() => {
-  "use strict";
+<script type="module">
+/* =========================================================
+   1 · Cargar el codificador Vorbis WASM (con fallback)
+   ========================================================= */
+let wasmEncoder = null;
+let engineName = 'MediaRecorder';
 
-  const dropEl    = document.getElementById('drop');
-  const inputEl   = document.getElementById('file');
-  const listEl    = document.getElementById('list');
-  const bitrateEl = document.getElementById('bitrate');
-  const warnEl    = document.getElementById('warn');
+try {
+  const mod = await import('https://cdn.jsdelivr.net/npm/wasm-media-encoders@0.2.1/+esm');
+  wasmEncoder = mod.createEncoder;
+  engineName = 'Vorbis WASM (OGG real)';
+} catch (e) {
+  console.warn('WASM encoder no disponible, se usará MediaRecorder:', e);
+}
 
-  // ---------- Soporte de códec ----------
-  const CANDIDATOS = [
+const pill = document.getElementById('enginePill');
+pill.textContent = wasmEncoder ? 'OGG universal' : 'modo compatibilidad';
+pill.classList.toggle('ok', !!wasmEncoder);
+
+/* =========================================================
+   2 · Conversión con WASM (OGG en todos los navegadores)
+   ========================================================= */
+async function convertirWasm(file, quality, onProgress) {
+  const arrayBuf = await file.arrayBuffer();
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  const audioBuffer = await ac.decodeAudioData(arrayBuf);
+  ac.close();
+
+  onProgress(0.35);
+
+  // Vorbis quiere 44.1k o 48k → resampleamos a 48k estéreo
+  const targetRate = 48000;
+  const offline = new OfflineAudioContext(
+    audioBuffer.numberOfChannels,
+    Math.ceil(audioBuffer.duration * targetRate),
+    targetRate
+  );
+  const src = offline.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(offline.destination);
+  src.start();
+  const rendered = await offline.startRendering();
+
+  onProgress(0.6);
+
+  const encoder = await wasmEncoder('audio/ogg;codecs=vorbis', { quality });
+  const channels = [];
+  for (let i = 0; i < rendered.numberOfChannels; i++) {
+    channels.push(rendered.getChannelData(i));
+  }
+
+  const data = await encoder.encode(channels);
+  onProgress(1);
+
+  const blob = new Blob([data], { type: 'audio/ogg' });
+  if (blob.size < 100) throw new Error('codificación vacía');
+  return blob;
+}
+
+/* =========================================================
+   3 · Fallback con MediaRecorder (Firefox → OGG, Chrome → WebM)
+   ========================================================= */
+function pickMime() {
+  if (typeof MediaRecorder === 'undefined') return '';
+  const list = [
     'audio/ogg;codecs=opus',
     'audio/ogg;codecs=vorbis',
     'audio/ogg',
     'audio/webm;codecs=opus'
   ];
-
-  function elegirMime() {
-    if (typeof MediaRecorder === 'undefined') return '';
-    for (const c of CANDIDATOS) {
-      try { if (MediaRecorder.isTypeSupported(c)) return c; } catch (_) {}
-    }
-    return '';
+  for (const m of list) {
+    try { if (MediaRecorder.isTypeSupported(m)) return m; } catch (_) {}
   }
+  return '';
+}
 
-  const MIME = elegirMime();
-  const ES_OGG = MIME.includes('ogg');
-  const EXT = ES_OGG ? 'ogg' : 'webm';
+async function convertirMediaRecorder(file, quality, onProgress) {
+  const mime = pickMime();
+  if (!mime) throw new Error('MediaRecorder no soportado');
 
-  if (!MIME) {
-    warnEl.style.display = 'block';
-    warnEl.textContent =
-      'Tu navegador no soporta la grabación de audio necesaria. Prueba con Firefox o Chrome actualizados.';
-  } else if (!ES_OGG) {
-    warnEl.style.display = 'block';
-    warnEl.textContent =
-      'Tu navegador (probablemente Chrome) no permite contenedor OGG en MediaRecorder. ' +
-      'El resultado será .webm con audio Opus — misma calidad, otro contenedor. ' +
-      'Para obtener .ogg real, abre esta página en Firefox.';
-  }
+  const bitrate = Math.round(64000 + quality * 224000); // mapeo aproximado
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  const arrayBuf = await file.arrayBuffer();
+  const audioBuffer = await ac.decodeAudioData(arrayBuf);
 
-  // ---------- AudioContext reutilizable ----------
-  let ctx = null;
-  function getCtx() {
-    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    return ctx;
-  }
+  const dest = ac.createMediaStreamDestination();
+  const src  = ac.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(dest);
 
-  // ---------- Conversión ----------
-  function convertir(file, bitrate, onProgress) {
-    return new Promise(async (resolve, reject) => {
-      let src = null, dest = null, rec = null, raf = 0;
+  const rec = new MediaRecorder(dest.stream, { mimeType: mime, audioBitsPerSecond: bitrate });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
 
-      try {
-        const ac = getCtx();
-        if (ac.state === 'suspended') await ac.resume();
-
-        const arrayBuf = await file.arrayBuffer();
-        const audioBuffer = await ac.decodeAudioData(arrayBuf);
-
-        dest = ac.createMediaStreamDestination();
-        src  = ac.createBufferSource();
-        src.buffer = audioBuffer;
-        src.connect(dest);
-
-        const opciones = { audioBitsPerSecond: bitrate };
-        if (MIME) opciones.mimeType = MIME;
-        rec = new MediaRecorder(dest.stream, opciones);
-
-        const trozos = [];
-        rec.ondataavailable = e => { if (e.data && e.data.size) trozos.push(e.data); };
-
-        const grabacion = new Promise((res, rej) => {
-          rec.onstop  = () => res(new Blob(trozos, { type: MIME || 'audio/ogg' }));
-          rec.onerror = e => rej((e && e.error) || new Error('fallo al grabar'));
-        });
-
-        const t0 = ac.currentTime;
-        const tick = () => {
-          const p = Math.min(1, (ac.currentTime - t0) / audioBuffer.duration);
-          onProgress(p);
-          if (p < 1) raf = requestAnimationFrame(tick);
-        };
-
-        rec.start();
-        src.start();
-        tick();
-
-        await new Promise(res => { src.onended = res; });
-        cancelAnimationFrame(raf);
-        if (rec.state !== 'inactive') rec.stop();
-
-        const blob = await grabacion;
-        onProgress(1);
-        resolve(blob);
-
-      } catch (err) {
-        cancelAnimationFrame(raf);
-        try { if (rec && rec.state !== 'inactive') rec.stop(); } catch (_) {}
-        reject(err);
-      } finally {
-        try { if (src) src.disconnect(); } catch (_) {}
-        try { if (dest) dest.disconnect(); } catch (_) {}
-      }
-    });
-  }
-
-  // ---------- UI de cada archivo ----------
-  function crearFila(nombre) {
-    const li = document.createElement('li');
-    li.className = 'item';
-    li.innerHTML =
-      '<div class="meta"><div class="name"></div><div class="status">En cola…</div></div>' +
-      '<div class="bar"><span></span></div>' +
-      '<div class="actions"></div>';
-    li.querySelector('.name').textContent = nombre;
-    listEl.appendChild(li);
-    return {
-      li,
-      status : li.querySelector('.status'),
-      bar    : li.querySelector('.bar span'),
-      actions: li.querySelector('.actions')
-    };
-  }
-
-  async function procesar(file) {
-    const fila = crearFila(file.name);
-
-    if (!MIME) {
-      fila.li.classList.add('err');
-      fila.status.textContent = 'No soportado en este navegador';
-      return;
-    }
-
-    fila.status.textContent = 'Decodificando…';
-
-    try {
-      const bitrate = parseInt(bitrateEl.value, 10) || 128000;
-      const blob = await convertir(file, bitrate, p => {
-        fila.bar.style.width = (p * 100).toFixed(1) + '%';
-        fila.status.textContent = 'Convirtiendo… ' + Math.round(p * 100) + '%';
-      });
-
-      fila.bar.style.width = '100%';
-      fila.li.classList.add('done');
-      fila.status.textContent =
-        'Listo · ' + (blob.size / 1048576).toFixed(2) + ' MB · ' + EXT.toUpperCase();
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.className = 'btn';
-      a.href = url;
-      a.download = file.name.replace(/\.[^.]+$/, '') + '.' + EXT;
-      a.textContent = '⬇ Descargar .' + EXT;
-      fila.actions.appendChild(a);
-
-    } catch (err) {
-      fila.li.classList.add('err');
-      fila.status.textContent = 'Error: ' + (err && err.message ? err.message : 'no se pudo convertir');
-    }
-  }
-
-  // ---------- Cola secuencial ----------
-  let cola = Promise.resolve();
-  function encolar(file) {
-    cola = cola.then(() => procesar(file)).catch(() => {});
-  }
-
-  function manejarArchivos(fileList) {
-    const archivos = Array.from(fileList || []);
-    if (!archivos.length) return;
-    archivos.forEach(encolar);
-  }
-
-  // ---------- Eventos ----------
-  dropEl.addEventListener('click', () => inputEl.click());
-
-  inputEl.addEventListener('change', e => {
-    manejarArchivos(e.target.files);
-    inputEl.value = '';
+  const done = new Promise((res, rej) => {
+    rec.onstop  = () => res(new Blob(chunks, { type: mime }));
+    rec.onerror = e => rej(e.error || new Error('error grabando'));
   });
 
-  ['dragenter', 'dragover'].forEach(ev =>
-    dropEl.addEventListener(ev, e => {
-      e.preventDefault();
-      dropEl.classList.add('over');
-    })
-  );
+  const t0 = ac.currentTime;
+  const tick = () => {
+    const p = Math.min(1, (ac.currentTime - t0) / audioBuffer.duration);
+    onProgress(p);
+    if (p < 1) requestAnimationFrame(tick);
+  };
 
-  ['dragleave', 'drop'].forEach(ev =>
-    dropEl.addEventListener(ev, e => {
-      e.preventDefault();
-      dropEl.classList.remove('over');
-    })
-  );
+  rec.start();
+  src.start();
+  tick();
 
-  dropEl.addEventListener('drop', e => manejarArchivos(e.dataTransfer.files));
+  await new Promise(res => { src.onended = res; });
+  if (rec.state !== 'inactive') rec.stop();
+  const blob = await done;
+  ac.close();
+  return blob;
+}
 
-  // Evita que soltar fuera de la zona abra el archivo
-  window.addEventListener('dragover', e => e.preventDefault());
-  window.addEventListener('drop', e => e.preventDefault());
-})();
+/* =========================================================
+   4 · UI de la cola de conversión
+   ========================================================= */
+const dropEl   = document.getElementById('drop');
+const inputEl  = document.getElementById('file');
+const listEl   = document.getElementById('list');
+const qualityEl= document.getElementById('quality');
+const warnEl   = document.getElementById('warn');
+
+function fila(nombre) {
+  const li = document.createElement('li');
+  li.className = 'item';
+  li.innerHTML =
+    '<div class="meta"><div class="name"></div><div class="status">En cola…</div></div>' +
+    '<div class="bar"><span></span></div>' +
+    '<div class="actions"></div>';
+  li.querySelector('.name').textContent = nombre;
+  listEl.appendChild(li);
+  return {
+    li,
+    status : li.querySelector('.status'),
+    bar    : li.querySelector('.bar span'),
+    actions: li.querySelector('.actions')
+  };
+}
+
+async function procesar(file) {
+  const f = fila(file.name);
+  const quality = parseFloat(qualityEl.value) || 0.4;
+  f.status.textContent = 'Decodificando…';
+
+  try {
+    const blob = wasmEncoder
+      ? await convertirWasm(file, quality, p => {
+          f.bar.style.width = (p * 100).toFixed(1) + '%';
+          f.status.textContent = 'Codificando OGG… ' + Math.round(p * 100) + '%';
+        })
+      : await convertirMediaRecorder(file, quality, p => {
+          f.bar.style.width = (p * 100).toFixed(1) + '%';
+          f.status.textContent = 'Convirtiendo… ' + Math.round(p * 100) + '%';
+        });
+
+    const isOgg = blob.type.includes('ogg');
+    const ext = isOgg ? 'ogg' : 'webm';
+
+    f.bar.style.width = '100%';
+    f.li.classList.add('done');
+    f.status.textContent =
+      'Listo · ' + (blob.size / 1048576).toFixed(2) + ' MB · ' + ext.toUpperCase();
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.href = url;
+    a.download = file.name.replace(/\.[^.]+$/, '') + '.' + ext;
+    a.textContent = '⬇ Descargar .' + ext;
+    f.actions.appendChild(a);
+
+  } catch (err) {
+    console.error(err);
+    f.li.classList.add('err');
+    f.status.textContent = 'Error: ' + (err?.message || 'no se pudo convertir');
+  }
+}
+
+let cola = Promise.resolve();
+const encolar = file => { cola = cola.then(() => procesar(file)).catch(() => {}); };
+
+function manejar(files) {
+  const arr = Array.from(files || []);
+  if (!arr.length) return;
+  arr.forEach(encolar);
+}
+
+dropEl.addEventListener('click', () => inputEl.click());
+inputEl.addEventListener('change', e => { manejar(e.target.files); inputEl.value = ''; });
+
+['dragenter','dragover'].forEach(ev =>
+  dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.add('over'); })
+);
+['dragleave','drop'].forEach(ev =>
+  dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.remove('over'); })
+);
+dropEl.addEventListener('drop', e => manejar(e.dataTransfer.files));
+
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
+
+/* =========================================================
+   5 · YouTube → backend configurable
+   ========================================================= */
+const ytUrl   = document.getElementById('ytUrl');
+const ytApi   = document.getElementById('ytApi');
+const ytGo    = document.getElementById('ytGo');
+const ytList  = document.getElementById('ytList');
+const ytWarn  = document.getElementById('ytWarn');
+
+function ytFila(nombre) {
+  const li = document.createElement('li');
+  li.className = 'item';
+  li.innerHTML =
+    '<div class="meta"><div class="name"></div><div class="status">En cola…</div></div>' +
+    '<div class="bar"><span></span></div>' +
+    '<div class="actions"></div>';
+  li.querySelector('.name').textContent = nombre;
+  ytList.appendChild(li);
+  return {
+    li,
+    status : li.querySelector('.status'),
+    bar    : li.querySelector('.bar span'),
+    actions: li.querySelector('.actions')
+  };
+}
+
+ytGo.addEventListener('click', async () => {
+  const url = ytUrl.value.trim();
+  const api = ytApi.value.trim();
+
+  if (!url || !/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//i.test(url)) {
+    ytWarn.textContent = 'Pega una URL válida de YouTube.';
+    ytWarn.style.display = 'block';
+    return;
+  }
+  if (!api) {
+    ytWarn.textContent = 'Configura primero el endpoint de tu backend.';
+    ytWarn.style.display = 'block';
+    return;
+  }
+
+  ytWarn.style.display = 'none';
+  const f = ytFila(url);
+  f.status.textContent = 'Contactando backend…';
+  f.bar.style.width = '30%';
+  ytGo.disabled = true;
+
+  try {
+    const res = await fetch(api, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, format: 'ogg' })
+    });
+
+    f.bar.style.width = '70%';
+
+    if (!res.ok) throw new Error('backend respondió ' + res.status);
+    const data = await res.json();
+
+    if (!data || !data.url) throw new Error('respuesta sin campo "url"');
+
+    f.bar.style.width = '100%';
+    f.li.classList.add('done');
+    f.status.textContent = 'Listo · enlace generado';
+
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.href = data.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = '⬇ Descargar .ogg';
+    f.actions.appendChild(a);
+
+    if (data.title) f.li.querySelector('.name').textContent = data.title;
+
+  } catch (err) {
+    console.error(err);
+    f.li.classList.add('err');
+    f.bar.style.width = '100%';
+    f.status.textContent = 'Error: ' + (err?.message || 'fallo');
+  } finally {
+    ytGo.disabled = false;
+  }
+});
 </script>
 </body>
 </html>
