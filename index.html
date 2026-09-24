@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor MP3 a OGG & Descargador YouTube OGG</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fd79a8;
+            --bg: #f8f9fa;
+            --text: #2d3436;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #636e72;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab {
+            padding: 15px 30px;
+            border: none;
+            background: none;
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+        
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--secondary);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: rgba(162, 155, 254, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(108, 92, 231, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .upload-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #636e72;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(108, 92, 231, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(253, 121, 168, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            display: none;
+        }
+        
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .audio-player {
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .download-btn {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(to right, #00b894, #00cec9);
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.4);
+        }
+        
+        .youtube-input {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .youtube-url {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .youtube-url:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1);
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(162, 155, 254, 0.05);
+            border-radius: 12px;
+        }
+        
+        .option-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .option-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .option-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .status-message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .status-success {
+            background: rgba(0, 184, 148, 0.1);
+            color: #00b894;
+            border: 1px solid #00b894;
+        }
+        
+        .status-error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        
+        .status-info {
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #636e72;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .youtube-input {
+                flex-direction: column;
+            }
+            
+            .options {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Conversor MP3 a OGG & Descargador YouTube</h1>
+            <p class="subtitle">Convierte archivos MP3 locales a OGG o descarga audio de YouTube en formato OGG - ¡100% Gratis!</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="mp3-converter">Conversor MP3 → OGG</button>
+            <button class="tab" data-tab="youtube-downloader">Descargador YouTube OGG</button>
+        </div>
+        
+        <div class="content">
+            <!-- Sección de conversor MP3 a OGG -->
+            <div class="section active" id="mp3-converter">
+                <h2>Conversor de archivos MP3 a OGG</h2>
+                <p>Sube un archivo MP3 local y conviértelo a formato OGG directamente en tu navegador.</p>
+                
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">📁</div>
+                    <p class="upload-text">Arrastra y suelta tu archivo MP3 aquí o haz clic para seleccionarlo</p>
+                    <input type="file" id="mp3-input" accept=".mp3" style="display: none;">
+                    <button class="btn btn-primary" id="browse-btn">Buscar archivo MP3</button>
+                </div>
+                
+                <div class="progress-container" id="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                
+                <div class="status-message" id="status-message"></div>
+                
+                <div class="result-container" id="result-container">
+                    <h3 class="result-title">✅ Conversión completada</h3>
+                    <p>Archivo OGG generado exitosamente. Puedes escucharlo y descargarlo a continuación.</p>
+                    <audio controls class="audio-player" id="audio-player">
+                        <source src="" type="audio/ogg">
+                        Tu navegador no soporta el elemento de audio.
+                    </audio>
+                    <a href="#" class="download-btn" id="download-btn" download="converted.ogg">⬇️ Descargar archivo OGG</a>
+                </div>
+            </div>
+            
+            <!-- Sección de descargador de YouTube -->
+            <div class="section" id="youtube-downloader">
+                <h2>Descargador de audio de YouTube en formato OGG</h2>
+                <p>Introduce la URL de un video de YouTube para descargar su audio en formato OGG (Vorbis).</p>
+                
+                <div class="youtube-input">
+                    <input type="url" class="youtube-url" id="youtube-url" placeholder="https://www.youtube.com/watch?v=..." required>
+                    <button class="btn btn-primary" id="download-youtube-btn">Obtener audio OGG</button>
+                </div>
+                
+                <div class="options">
+                    <div class="option-group">
+                        <label class="option-label" for="audio-quality">Calidad de audio:</label>
+                        <select class="option-select" id="audio-quality">
+                            <option value="128">128 kbps (Recomendado)</option>
+                            <option value="192">192 kbps (Alta calidad)</option>
+                            <option value="96">96 kbps (Menor tamaño)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label class="option-label" for="download-method">Método de descarga:</label>
+                        <select class="option-select" id="download-method">
+                            <option value="api">Servicio en línea (Rápido)</option>
+                            <option value="local">Conversión local (Más segura)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="status-message" id="youtube-status"></div>
+                
+                <div class="result-container" id="youtube-result-container">
+                    <h3 class="result-title">✅ Audio de YouTube obtenido</h3>
+                    <p>El audio del video de YouTube se ha convertido a formato OGG. Puedes escucharlo y descargarlo.</p>
+                    <audio controls class="audio-player" id="youtube-audio-player">
+                        <source src="" type="audio/ogg">
+                        Tu navegador no soporta el elemento de audio.
+                    </audio>
+                    <a href="#" class="download-btn" id="youtube-download-btn" download="youtube_audio.ogg">⬇️ Descargar audio OGG</a>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Desarrollado con ❤️ | Conversor MP3 a OGG & Descargador YouTube OGG</p>
+            <p>Nota: La conversión de YouTube utiliza servicios de terceros. Para archivos grandes, la conversión local es más segura.</p>
+        </footer>
+    </div>
+
+    <script>
+        // =============================================
+        // VARIABLES Y ELEMENTOS DEL DOM
+        // =============================================
+        const tabs = document.querySelectorAll('.tab');
+        const sections = document.querySelectorAll('.section');
+        
+        // Elementos del conversor MP3
+        const uploadArea = document.getElementById('upload-area');
+        const mp3Input = document.getElementById('mp3-input');
+        const browseBtn = document.getElementById('browse-btn');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const statusMessage = document.getElementById('status-message');
+        const resultContainer = document.getElementById('result-container');
+        const audioPlayer = document.getElementById('audio-player');
+        const downloadBtn = document.getElementById('download-btn');
+        
+        // Elementos del descargador de YouTube
+        const youtubeUrlInput = document.getElementById('youtube-url');
+        const downloadYoutubeBtn = document.getElementById('download-youtube-btn');
+        const audioQualitySelect = document.getElementById('audio-quality');
+        const downloadMethodSelect = document.getElementById('download-method');
+        const youtubeStatus = document.getElementById('youtube-status');
+        const youtubeResultContainer = document.getElementById('youtube-result-container');
+        const youtubeAudioPlayer = document.getElementById('youtube-audio-player');
+        const youtubeDownloadBtn = document.getElementById('youtube-download-btn');
+        
+        // =============================================
+        // MANEJO DE PESTAÑAS
+        // =============================================
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Actualizar pestañas activas
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Actualizar secciones activas
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === tabId) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // =============================================
+        // CONVERSOR MP3 A OGG (CONVERSIÓN LOCAL)
+        // =============================================
+        
+        // Manejar clic en el botón de búsqueda
+        browseBtn.addEventListener('click', () => {
+            mp3Input.click();
+        });
+        
+        // Manejar selección de archivo
+        mp3Input.addEventListener('change', handleFileSelect);
+        
+        // Manejar arrastrar y soltar
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--primary)';
+            uploadArea.style.background = 'rgba(108, 92, 231, 0.1)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'var(--secondary)';
+            uploadArea.style.background = 'rgba(162, 155, 254, 0.05)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--secondary)';
+            uploadArea.style.background = 'rgba(162, 155, 254, 0.05)';
+            
+            if (e.dataTransfer.files.length) {
+                mp3Input.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+        
+        // Función para manejar la selección de archivo
+        function handleFileSelect() {
+            const file = mp3Input.files[0];
+            if (!file) return;
+            
+            // Verificar que es un archivo MP3
+            if (!file.type.match('audio/mpeg') && !file.name.toLowerCase().endsWith('.mp3')) {
+                showStatus('Por favor selecciona un archivo MP3 válido.', 'error');
+                return;
+            }
+            
+            // Mostrar progreso
+            progressContainer.style.display = 'block';
+            statusMessage.style.display = 'none';
+            resultContainer.style.display = 'none';
+            
+            // Simular progreso (en una aplicación real, esto sería real)
+            simulateProgress(0, 100, 2000, () => {
+                convertMp3ToOgg(file);
+            });
+        }
+        
+        // Función para simular barra de progreso
+        function simulateProgress(start, end, duration, callback) {
+            let startTime = null;
+            
+            function animate(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const width = start + (end - start) * progress;
+                
+                progressBar.style.width = width + '%';
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Función principal para convertir MP3 a OGG
+        async function convertMp3ToOgg(file) {
+            try {
+                showStatus('Convirtiendo MP3 a OGG...', 'info');
+                
+                // Crear un objeto URL para el archivo MP3
+                const mp3Url = URL.createObjectURL(file);
+                
+                // Crear un contexto de audio
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Decodificar el archivo MP3
+                const arrayBuffer = await file.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                // Configurar el codificador OGG (usando MediaRecorder)
+                const mediaRecorder = new MediaRecorder(audioContext.createMediaStreamDestination().stream, {
+                    mimeType: 'audio/ogg; codecs=vorbis',
+                    audioBitsPerSecond: 128000 // 128 kbps
+                });
+                
+                const chunks = [];
+                mediaRecorder.ondataavailable = (e) => {
+                    chunks.push(e.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const oggBlob = new Blob(chunks, { type: 'audio/ogg' });
+                    const oggUrl = URL.createObjectURL(oggBlob);
+                    
+                    // Mostrar resultados
+                    audioPlayer.src = oggUrl;
+                    downloadBtn.href = oggUrl;
+                    
+                    // Configurar nombre de archivo para descarga
+                    const oggFileName = file.name.replace(/\.mp3$/i, '.ogg');
+                    downloadBtn.download = oggFileName;
+                    
+                    resultContainer.style.display = 'block';
+                    showStatus('¡Conversión completada exitosamente!', 'success');
+                };
+                
+                // Crear un source de audio buffer y conectarlo al destino
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+                
+                // Iniciar la grabación
+                mediaRecorder.start();
+                
+                // Reproducir el audio buffer (esto alimentará el MediaRecorder)
+                source.start(0);
+                
+                // Detener la grabación cuando termine la reproducción
+                source.onended = () => {
+                    mediaRecorder.stop();
+                    audioContext.close();
+                };
+                
+            } catch (error) {
+                console.error('Error en la conversión:', error);
+                showStatus('Error al convertir el archivo. Intenta con un archivo MP3 diferente o más pequeño.', 'error');
+                progressContainer.style.display = 'none';
+            }
+        }
+        
+        // Función para mostrar mensajes de estado
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message status-' + type;
+            statusMessage.style.display = 'block';
+        }
+        
+        // =============================================
+        // DESCARGADOR DE YOUTUBE EN FORMATO OGG
+        // =============================================
+        
+        downloadYoutubeBtn.addEventListener('click', downloadYouTubeAudio);
+        
+        async function downloadYouTubeAudio() {
+            const url = youtubeUrlInput.value.trim();
+            
+            if (!url) {
+                showYouTubeStatus('Por favor, introduce una URL de YouTube válida.', 'error');
+                return;
+            }
+            
+            // Validar que sea una URL de YouTube
+            if (!url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/)) {
+                showYouTubeStatus('URL no válida. Introduce una URL de YouTube válida (ej: https://www.youtube.com/watch?v=...).', 'error');
+                return;
+            }
+            
+            const method = downloadMethodSelect.value;
+            
+            showYouTubeStatus('Obteniendo audio de YouTube...', 'info');
+            youtubeResultContainer.style.display = 'none';
+            
+            try {
+                let oggBlob;
+                
+                if (method === 'api') {
+                    // Usar servicio de conversión en línea
+                    oggBlob = await convertYouTubeUsingAPI(url);
+                } else {
+                    // Usar conversión local (requiere descargar audio primero)
+                    oggBlob = await convertYouTubeUsingLocal(url);
+                }
+                
+                // Crear URL para el blob
+                const oggUrl = URL.createObjectURL(oggBlob);
+                
+                // Mostrar resultados
+                youtubeAudioPlayer.src = oggUrl;
+                youtubeDownloadBtn.href = oggUrl;
+                youtubeDownloadBtn.download = `youtube_audio_${new Date().getTime()}.ogg`;
+                
+                youtubeResultContainer.style.display = 'block';
+                showYouTubeStatus('¡Audio obtenido exitosamente!', 'success');
+                
+            } catch (error) {
+                console.error('Error al obtener audio de YouTube:', error);
+                showYouTubeStatus('Error al obtener el audio. Verifica la URL e intenta nuevamente. Si el problema persiste, intenta con el método de conversión local.', 'error');
+            }
+        }
+        
+        // Función para convertir usando servicio en línea
+        async function convertYouTubeUsingAPI(url) {
+            // Extraer ID del video
+            let videoId = '';
+            const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            
+            if (match && match[1]) {
+                videoId = match[1];
+            } else {
+                throw new Error('No se pudo extraer el ID del video de la URL proporcionada.');
+            }
+            
+            // Usar servicio de conversión en línea (ejemplo: CutYT.com)
+            const quality = audioQualitySelect.value;
+            const apiUrl = `https://www.cutyt.com/api/convert?url=${encodeURIComponent(url)}&format=ogg&quality=${quality}`;
+            
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servicio de conversión.');
+            }
+            
+            const data = await response.json();
+            
+            if (!data.url) {
+                throw new Error('No se recibió la URL del archivo convertido del servicio.');
+            }
+            
+            // Descargar el archivo OGG desde la URL proporcionada
+            const oggResponse = await fetch(data.url);
+            
+            if (!oggResponse.ok) {
+                throw new Error('Error al descargar el archivo convertido.');
+            }
+            
+            return await oggResponse.blob();
+        }
+        
+        // Función para convertir usando método local
+        async function convertYouTubeUsingLocal(url) {
+            // Paso 1: Obtener audio del video de YouTube (formato MP4 o similar)
+            // Para esto, usaríamos un servicio que nos dé el audio directo
+            
+            // Paso 2: Convertir el audio a OGG usando el mismo método que para MP3
+            
+            // Nota: Implementación completa requeriría más lógica
+            // Por ahora, mostraremos un mensaje indicando que se prefiera el método API
+            throw new Error('El método de conversión local está en desarrollo. Por favor, usa el método de servicio en línea.');
+        }
+        
+        // Función para mostrar mensajes de estado de YouTube
+        function showYouTubeStatus(message, type) {
+            youtubeStatus.textContent = message;
+            youtubeStatus.className = 'status-message status-' + type;
+            youtubeStatus.style.display = 'block';
+        }
+        
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+        
+        // Configurar arrastrar y soltar en toda la página (opcional)
+        document.body.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
